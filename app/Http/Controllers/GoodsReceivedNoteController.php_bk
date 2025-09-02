@@ -1,0 +1,167 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Http\Requests\GoodReceivedNote\UpdateRequest;
+use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderDetail;
+use App\Models\ApprovedPurchaseOrderDetail;
+use App\Models\Event;
+use App\Models\Inventory;
+use App\Models\Vendor;
+use App\Models\Item;
+use App\Models\Place;
+use App\Models\Store;
+use App\Models\UnitMeasure;
+use App\Models\User;
+use App\Models\ItemDetail;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+
+class GoodsReceivedNoteController extends Controller
+{
+  /**
+   * Display a listing of the resource.
+   */
+  public function index()
+  {
+    $results = PurchaseOrder::with(['vendor', 'detail.unitMeasure','detail.item', 'detail.approvedDetail.inventory.store.place', 'createdBy', 'updatedBy'])
+    ->where("status", "approved")->get();
+    return view($this->view, compact('results'));
+  }
+
+  /**
+   * Show the form for creating a new resource.
+   */
+  public function create()
+  {
+
+    $stores = Store::with("place")->get();
+
+    // $events = Event::with('purchaseOrder.detail.approvedDetail.inventories.store.place')->whereHas('purchaseOrder')->get();
+    $events = Event::with('purchaseOrder.detail.approvedDetail.inventories.store.place')
+    ->whereHas('purchaseOrder')
+    ->get()
+    ->filter(function($event) {
+        // Extract the statuses
+        $statuses = $event->purchaseOrder[0]->detail
+            ->pluck('approvedDetail')
+            ->pluck('inventory')
+            ->flatten()
+            ->map(fn($inventory) => $inventory ? $inventory->inventory_status : "Remaining");
+
+        // Check if all statuses are "Completed"
+        return !$statuses->every(fn($status) => $status === "Completed");
+    });
+
+    return view($this->view, compact('events', 'stores'));
+  }
+
+  /**
+   * Store a newly created resource in storage.
+   */
+  public function store(UpdateRequest $request)
+  {
+    $validated = $request->validated();
+    $inventory = Arr::only($validated, ['items']);
+    try {
+      DB::beginTransaction();
+      foreach ($inventory['items'] as $key => $purchaseOrderItemData) {
+        $quantity = (int) $purchaseOrderItemData['current_quantity'];
+        $newQuantity = (int) $purchaseOrderItemData['quantity'];
+        $remaining = $quantity - $newQuantity;
+        $status = $remaining === 0 ? "Completed" : "Remaining";
+        Inventory::createWithTransaction([
+          'approved_purchase_order_detail_id' => $purchaseOrderItemData['approved_purchase_order_detail_id'],
+          'quantity' => $newQuantity,
+          'remaining' => max($remaining, 0),
+          'inventory_status' => $status,
+          'store_id' => $validated['store_id'],
+        ]);
+        updateItemDetails(
+          $purchaseOrderItemData['item_id'],
+          [
+            'received_quantity' => $newQuantity
+          ]
+        );
+      }
+      DB::commit();
+      return redirect()->route($this->redirect)->with('success', '' . $this->controller . ' updated successfully.');
+    } catch (\Exception $e) {
+      DB::rollBack();
+      return redirect()->back()->with('error', 'Failed to update ' . $this->controller . ': ' . $e->getMessage());
+    }
+  }
+
+  /**
+   * Display the specified resource.
+   */
+  public function show(string $id)
+  {
+    $places = Place::all();
+    $vendors = Vendor::all();
+    $items = Item::all();
+    $units = UnitMeasure::all();
+    $result = PurchaseOrder::with('vendor', 'detail.item', 'detail.unitMeasure', 'detail.approvedDetail.inventories.store.place')->where("status", "approved")->where("id", $id)->first();
+    return view($this->view, compact('result', 'items', 'units', 'vendors', 'places'));
+  }
+
+  /**
+   * Show the form for editing the specified resource.
+   */
+  public function edit(string $id)
+  {
+    $places = Place::all();
+    $stores = Store::with("place")->get();
+    $vendors = Vendor::all();
+    $items = Item::all();
+    $units = UnitMeasure::all();
+    $result = PurchaseOrder::with('vendor', 'detail.item', 'detail.unitMeasure', 'detail.approvedDetail.inventory')->find($id);
+    return view($this->view, compact('result', 'items', 'units', 'vendors', 'places', 'stores'));
+  }
+
+  /**
+   * Update the specified resource in storage.
+   */
+  public function update(UpdateRequest $request, string $id)
+  {
+    $validated = $request->validated();
+    $inventory = Arr::only($validated, ['items']);
+    try {
+      DB::beginTransaction();
+      foreach ($inventory['items'] as $key => $purchaseOrderItemData) {
+        $quantity = (int) $purchaseOrderItemData['current_quantity'];
+        $newQuantity = (int) $purchaseOrderItemData['quantity'];
+        $remaining = $quantity - $newQuantity;
+        $status = $remaining === 0 ? "Completed" : "Remaining";
+
+        Inventory::createWithTransaction([
+          'approved_purchase_order_detail_id' => $purchaseOrderItemData['approved_purchase_order_detail_id'],
+          'quantity' => $newQuantity,
+          'remaining' => max($remaining, 0),
+          'inventory_status' => $status,
+          'store_id' => $validated['store_id'],
+        ]);
+        updateItemDetails(
+          $purchaseOrderItemData['item_id'],
+          [
+            'received_quantity' => $newQuantity
+          ]
+        );
+      }
+      DB::commit();
+      return redirect()->route($this->redirect)->with('success', '' . $this->controller . ' updated successfully.');
+    } catch (\Exception $e) {
+      DB::rollBack();
+      return redirect()->back()->with('error', 'Failed to update ' . $this->controller . ': ' . $e->getMessage());
+    }
+  }
+
+  public function destroy(string $id) {}
+}
