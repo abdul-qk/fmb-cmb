@@ -1,68 +1,283 @@
 # FMB Colombo - Laravel Application
 
+A Laravel 11 application for Food Management Business (FMB) operations in Colombo. This application includes features for inventory management, procurement, event management, recipe management, vendor management, and more.
 
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## Prerequisites
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Before running this application, ensure you have the following installed:
 
-## About Laravel
+- **PHP** >= 8.2
+- **Composer** (PHP dependency manager)
+- **Node.js** and **npm** (for frontend assets)
+- **Database**: SQLite (default), MySQL, PostgreSQL, or MariaDB
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Required PHP Extensions
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- BCMath PHP Extension
+- Ctype PHP Extension
+- cURL PHP Extension
+- DOM PHP Extension
+- Fileinfo PHP Extension
+- JSON PHP Extension
+- Mbstring PHP Extension
+- OpenSSL PHP Extension
+- PCRE PHP Extension
+- PDO PHP Extension
+- Tokenizer PHP Extension
+- XML PHP Extension
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Installation Steps
 
-## Learning Laravel
+### 1. Clone the Repository
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```bash
+git clone <repository-url>
+cd fmb-colombo-main
+```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### 2. Install PHP Dependencies
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+composer install
+```
 
-## Laravel Sponsors
+### 3. Install Node Dependencies
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+npm install
+```
 
-### Premium Partners
+### 4. Environment Configuration
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Create a `.env` file from the template (if `.env.example` exists) or create one manually:
 
-## Contributing
+```bash
+# On Windows PowerShell
+copy .env.example .env
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# On Linux/Mac
+cp .env.example .env
+```
 
-## Code of Conduct
+If `.env.example` doesn't exist, create a `.env` file with the following minimum configuration:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```env
+APP_NAME="FMB Colombo"
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_TIMEZONE=UTC
+APP_LOCALE=en
+APP_URL=http://localhost
 
-## Security Vulnerabilities
+LOG_CHANNEL=stack
+LOG_LEVEL=debug
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Database Configuration (SQLite - Default)
+DB_CONNECTION=sqlite
+DB_DATABASE=database/database.sqlite
+
+# OR for MySQL/PostgreSQL/MariaDB:
+# DB_CONNECTION=mysql
+# DB_HOST=127.0.0.1
+# DB_PORT=3306
+# DB_DATABASE=fmb_colombo
+# DB_USERNAME=root
+# DB_PASSWORD=
+
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+
+CACHE_DRIVER=file
+QUEUE_CONNECTION=sync
+```
+
+### 5. Generate Application Key
+
+```bash
+php artisan key:generate
+```
+
+### 6. Database Setup
+
+#### Option A: Using SQLite (Default - Easiest)
+
+Create the SQLite database file:
+
+```bash
+# On Windows PowerShell
+New-Item -ItemType File -Path database\database.sqlite
+
+# On Linux/Mac
+touch database/database.sqlite
+```
+
+#### Option B: Using MySQL/PostgreSQL/MariaDB
+
+1. Create a database for the application (e.g., `fmb_colombo`)
+2. Update your `.env` file with database credentials (as shown in step 4)
+
+### 7. Run Database Migrations
+
+```bash
+php artisan migrate
+```
+
+### 8. Seed the Database
+
+This will create initial data including:
+- A developer user account
+- Roles and permissions
+- Modules
+- Designations
+- Education types
+
+```bash
+php artisan db:seed
+```
+
+**Default Login Credentials:**
+- **Email:** `developer@fmb.com`
+- **Password:** `1234asdf@`
+
+### 9. Create Storage Link
+
+Link the storage directory for public access to uploaded files:
+
+```bash
+php artisan storage:link
+```
+
+### 10. Build Frontend Assets
+
+For **development** (with hot reload):
+
+```bash
+npm run dev
+```
+
+For **production** (optimized build):
+
+```bash
+npm run build
+```
+
+## Running the Application
+
+### Development Mode
+
+1. **Start the Laravel development server** (in one terminal):
+
+```bash
+php artisan serve
+```
+
+The application will be available at: `http://localhost:8000` or `http://127.0.0.1:8000`
+
+2. **Start Vite dev server** (in another terminal, if using `npm run dev`):
+
+```bash
+npm run dev
+```
+
+### Production Mode
+
+1. Build frontend assets:
+```bash
+npm run build
+```
+
+2. Optimize Laravel:
+```bash
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+3. Start the server:
+```bash
+php artisan serve
+```
+
+Or configure with a web server like Apache/Nginx.
+
+## Application Features
+
+This application includes the following modules:
+
+- **Dashboard** - Main dashboard with overview statistics
+- **Management** - Various management functionalities
+- **Configuration** - System configuration settings
+- **Event Management** - Event creation and management
+- **Procurement** - Purchase orders and vendor management
+- **Stock Control** - Inventory management, goods received/issued notes
+- **Reports** - Various reporting features
+
+### Key Functionalities
+
+- User authentication and role-based access control (RBAC)
+- Inventory management
+- Recipe and menu management
+- Vendor and supplier management
+- Purchase order processing
+- Goods received/issued notes
+- Event planning and management
+- Location, store, and kitchen management
+
+## Additional Commands
+
+### Clear Cache
+
+```bash
+php artisan cache:clear
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+```
+
+### Run Tests
+
+```bash
+php artisan test
+# or
+phpunit
+```
+
+### Create a New User (via Seeder or manually)
+
+You can modify `database/seeders/UserSeeder.php` to add more users, or create them through the application interface after logging in.
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Permission Denied Errors**
+   - Ensure `storage/` and `bootstrap/cache/` directories are writable:
+   ```bash
+   chmod -R 775 storage bootstrap/cache
+   ```
+
+2. **Database Connection Errors**
+   - Verify your `.env` database configuration matches your database server
+   - Ensure your database server is running
+   - For SQLite, ensure the database file exists and is writable
+
+3. **Vite Assets Not Loading**
+   - Make sure you've run `npm install` and `npm run dev` or `npm run build`
+   - Check that the Vite dev server is running if in development mode
+
+4. **Application Key Error**
+   - Run `php artisan key:generate` to generate the application encryption key
+
+## Technology Stack
+
+- **Backend:** Laravel 11.x
+- **PHP Version:** 8.2+
+- **Frontend Build Tool:** Vite 5.x
+- **JavaScript Libraries:** Axios
+- **Permissions:** Spatie Laravel Permission
+- **PDF Generation:** DomPDF
+- **Excel Export:** Maatwebsite Excel
 
 ## License
 
