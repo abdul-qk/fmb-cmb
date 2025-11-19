@@ -209,14 +209,14 @@
               <tr class="col-md-3 col-lg-3 mb-5">
                 <td>{{ $recipeItem->item->name }}</td>
                 <td class="text-lowercase">
-                  {{ round(($result->event->serving_persons / $recipe->serving) * $recipeItem->item_quantity, 1) }} {{ $chefRecipeItem->measurement->short_form }}
+                  {{ round(($result->event->serving_persons / $recipe->serving) * $recipeItem->item_quantity, 1) }} {{ $recipeItem->measurement->short_form }}
                 </td>
                 <td class="text-lowercase">
                   @php
                   $filteredDetails = $recipeItem->item->purchaseOrderDetails->where('recipe_id', $recipeItem->recipe_id);
                   @endphp
                   @foreach ($filteredDetails as $purchaseOrderDetail)
-                  {{ $purchaseOrderDetail->quantity }}  {{ $chefRecipeItem->measurement->short_form }}
+                  {{ $purchaseOrderDetail->quantity }}  {{ $recipeItem->measurement->short_form }}
                   @endforeach
                 </td>
               </tr>

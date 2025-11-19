@@ -51,6 +51,11 @@ Route::apiResource('kitchens', KitchenApiController::class);
 
 // Event Entities
 Route::apiResource('events', EventApiController::class);
+// Custom menu routes must come before resource routes
+Route::get('/menus/dishes-by-week', [MenuApiController::class, 'dishesByWeek']);
+Route::post('/menus/user-selections', [MenuApiController::class, 'saveUserSelections']);
+Route::get('/menus/user-selections', [MenuApiController::class, 'getUserSelections']);
+Route::get('/menus/fetch-menu-data', [MenuApiController::class, 'fetchMenuData']);
 Route::apiResource('menus', MenuApiController::class);
 Route::apiResource('recipes', RecipeApiController::class);
 
@@ -62,4 +67,3 @@ Route::apiResource('vendors', VendorApiController::class);
 Route::apiResource('inventories', InventoryApiController::class);
 Route::apiResource('items', ItemApiController::class);
 Route::apiResource('item-categories', ItemCategoryApiController::class);
-
